@@ -1,0 +1,56 @@
+<fieldset class="hidden-print">
+  <legend ng-click="form.collapse = !form.collapse" ng-class="{'dropup': form.collapse}">Novo lançamento<span class="caret"></span></legend>
+  <form name="form" uib-collapse="form.collapse">
+    <div class="form-group">
+      <label>Data</label>
+      <uib-datepicker ng-model="entry.date"></uib-datepicker>
+    </div>
+    <div class="form-group" ng-class="{'has-error': form.description.$invalid}">
+      <label>Descrição</label>
+      <textarea class="form-control" ng-model="entry.description" required name="description"></textarea>
+    </div>
+    <div class="form-group" ng-class="{'has-error': form.value.$invalid || form.type.$invalid}">
+      <label>Valor</label>
+      <div class="input-group">
+        <input class="form-control" ng-model="entry.value" required name="value" ui-money-mask="2" ui-negative-number>
+        <div class="input-group-btn">
+          <label class="btn btn-default" ng-model="_.multiplier" uib-btn-radio="1">Crédito</label>
+          <label class="btn btn-default" ng-model="_.multiplier" uib-btn-radio="-1">Débito</label>
+        </div>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary btn-block" ng-click="insert()">Incluir</button>
+  </form>
+  <hr>
+</fieldset>
+<div ng-if="entries.length">
+  <div class="hidden-print pull-right">
+    <button type="button" ng-click="clear()" class="btn btn-danger"><span class="glyphicon glyphicon-trash"></span> Limpar</button>
+    <a class="btn btn-warning" ng-href="data:application/json;charset=utf-8,{{entries}}" download="backup.json"><span class="glyphicon glyphicon-save"></span> Salvar tabela</a>
+    <button type="button" onclick="window.print()" class="btn btn-success"><span class="glyphicon glyphicon-print"></span> Imprimir</button>
+  </div>
+  <table class="table table-striped table-hover">
+    <thead>
+      <tr>
+        <th ng-repeat="th in ['Data', 'Descrição', 'Crédito', 'Débito', 'Subtotal']" ng-bind="th"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="entry in entries|orderBy:'date'">
+        <td>{{entry.date|date:'dd/MM/yyyy'}}</td>
+        <td>{{entry.description}}</td>
+        <td class="text-primary">{{((entry.value >= 0) ? entry.value : null)|currency}}</td>
+        <td class="text-danger">{{((entry.value < 0) ? entry.value : null)|currency}}</td>
+        <td ng-class="{'text-primary': subtotal($index) > 0, 'text-danger': subtotal($index) < 0}">{{subtotal($index)|currency}}</td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <th colspan="2">Totais:</td>
+        <td class="text-primary">{{credits()|currency}}</td>
+        <td class="text-danger">{{debits()|currency}}</td>
+        <td ng-class="{'text-primary': total() > 0, 'text-danger': total() < 0}" class="text-bold"><b>{{total()|currency}}</b></td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
